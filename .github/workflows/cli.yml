@@ -24,3 +24,13 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      -name: pylint
+        run: |
+          apt update && apt install -y bc
+          pip3 install -q pylint
+          PYLINT_THRESHOLD=9.0
+          pylint --version
+          find src -type f -iname "*.py" ! -iname "__init__.py" | xargs -r pylint --disable=C0111 | tee pylint.txt || true
+          score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
+          if [ -z "$score" ]; then score=10.0; fi
+          (( $(bc <<< "$score >= $PYLINT_THRESHOLD") ))
