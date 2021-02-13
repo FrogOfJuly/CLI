@@ -9,10 +9,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -26,10 +26,8 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       -name: pylint
         run: |
-          apt update && apt install -y bc
-          pip3 install -q pylint
+          pip install pylint
           PYLINT_THRESHOLD=9.0
-          pylint --version
           find src -type f -iname "*.py" ! -iname "__init__.py" | xargs -r pylint --disable=C0111 | tee pylint.txt || true
           score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
           if [ -z "$score" ]; then score=10.0; fi
