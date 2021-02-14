@@ -1,5 +1,4 @@
 from typing import Optional, Tuple, Type, Union, TextIO
-from sys import stdin
 
 
 def open_subshell() -> str:
@@ -11,7 +10,6 @@ def open_subshell() -> str:
         except EOFError:
             out = '\n'.join(res)
             break
-    print("returning out as usual", input())
     return out
 
 
