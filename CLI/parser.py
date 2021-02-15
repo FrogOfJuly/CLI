@@ -1,15 +1,20 @@
 from lark import Lark, Transformer
 import CLI.calls.calls as calls
+import CLI.arithm.arithm as arithm
 
 cli_grammar = r'''
 
-    start: command // | arithmetics
+    start: command | arithm
+    
+    arithm.1 : ARITHM
+    
+    ARITHM: /.+/
     
     pipe: "|"
 
-    command: call (pipe call)*
+    command.2: call (pipe call)*
 
-    call: name (" " arg)*
+    call: name " " (arg)*
 
     name: /[a-zA-Z][a-zA-Z0-9_]*/
 
@@ -71,3 +76,12 @@ class CliTransformer(Transformer):
     def word(self, items):
         (item,) = items
         return item
+
+    def arithm(self, items):
+        print(f"constructing arithmetics: {items}")
+        (item,) = items
+        return item
+
+    def ARITHM(self, items) :
+        print(f"constructing ARITHM: {items}")
+        return arithm.Arithm(items)
