@@ -39,7 +39,23 @@ class Echo(GenCall):
 
 class WC(GenCall):
     def wc(self, f: Union[TextIO, str]) -> Tuple[int, int, int]:
-        return 0, 0, 0
+        if isinstance(f, str):
+            lines = f.split('\n')
+            lc = len(lines)
+            words = []
+            for line in lines:
+                words += line.split(' ')
+            wc = len(words)
+            bc = len(f.encode("utf8"))
+            return lc, wc, bc
+        ln = -1
+        wc = 0
+        bc = 0
+        for ln, line in enumerate(f):
+            wc += len(line.split(" "))
+            bc += len((line + '\n').encode("utf8"))
+
+        return ln + 1, wc, bc
 
     def execute(self, input: Optional[str] = None) -> (str, str):
         res: Tuple[int, int, int] = (0, 0, 0)
