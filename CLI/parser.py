@@ -25,7 +25,6 @@ cli_grammar = r'''
 
     %import common.ESCAPED_STRING
     %import common.WS
-    // %import common.CNAME
 
     %ignore WS
 

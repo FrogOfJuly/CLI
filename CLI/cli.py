@@ -20,16 +20,23 @@ if __name__ == "__main__":
     tfm = CliTransformer()
     memory = init_memory()
     for line in stdin:
-        tree = cli_parser.parse(line[:-1])
+        line = line[:-1]
+        if line == "":
+            continue
+        tree = cli_parser.parse(line)
         stmt: Union[List[GenCall], Arithm] = tfm.transform(tree)
         if isinstance(stmt, Arithm):
             arithm = stmt
             memory, err = arithm.update(memory)
-            print(err)
+            if err != "":
+                print(err)
         else:
             calls = stmt
-            output = ""
+            output = None
             for call in calls:
+                call.substitude(mem=memory)
                 output, err = call.execute(input=output, mem=memory)
-                print(err)
-            print(output)
+                if err != "":
+                    print(err)
+            if output != "":
+                print(output)
