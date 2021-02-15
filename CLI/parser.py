@@ -82,6 +82,6 @@ class CliTransformer(Transformer):
         (item,) = items
         return item
 
-    def ARITHM(self, items) :
+    def ARITHM(self, items):
         print(f"constructing ARITHM: {items}")
         return arithm.Arithm(items)
