@@ -14,7 +14,7 @@ cli_grammar = r'''
 
     command.2: call (pipe call)*
 
-    call: name " " (arg)*
+    call: name | name " " (arg)+
 
     name: /[a-zA-Z][a-zA-Z0-9_]*/
 
@@ -31,9 +31,65 @@ cli_grammar = r'''
 
 '''
 
+arithmetics_grammar = r'''
+    arithmetics:  binary // | uop opnd
+    binary : (opnd)(bop)(opnd)
+    
+    opnd : id | number
+    number : SIGNED_NUMBER
+    id : /[a-zA-Z][a-zA-Z0-9_]*/
+     
+    // unary : uop id
+    
+    bop : /[=]/  
+    
+    // uop : "one unary operation" | "another unary operation"
+    
+    %import common.WS
+    %import common.SIGNED_NUMBER 
+    
+    %ignore WS
+'''
+
 cli_parser = Lark(
     cli_grammar, start='start'
 )
+
+arithmetics_parser = Lark(
+    arithmetics_grammar, start='arithmetics'
+)
+
+
+class ArithmTransformer(Transformer):
+    def arithmetics(self, items):
+        item, = items
+        return item
+
+    def id(self, items):
+        (item,) = items
+        # print(f"got id: {item}")
+        return str(item)
+
+    def opnd(self, items):
+        (item,) = items
+        # print(f"got {item} as opnd")
+        return item
+
+    def number(self, items):
+        item, = items
+        # print(f"got {item} as argument for number")
+        return int(item)
+
+    def binary(self, items):
+        assert len(items) == 3, f"something got very wrong, got \'{items}\' while parsing binary operator"
+        left, op, right = items
+        # print(f"got {op} with aruments {left} and {right}")
+        return op(left, right)
+
+    def bop(self, items):
+        (item,) = items
+        # print(f"constructing binary operation {item}")
+        return arithm.arithm_factory(item)
 
 
 class CliTransformer(Transformer):
@@ -78,10 +134,13 @@ class CliTransformer(Transformer):
         return item
 
     def arithm(self, items):
-        print(f"constructing arithmetics: {items}")
-        (item,) = items
+        item, = items
+        # print(f"got {type(item)} as arithm")
         return item
 
     def ARITHM(self, items):
-        print(f"constructing ARITHM: {items}")
-        return arithm.Arithm(items)
+        # print(f"constructing ARITHM: {items}")
+        tree = arithmetics_parser.parse(items)
+        # print(tree.pretty())
+        a = ArithmTransformer().transform(tree)
+        return a
