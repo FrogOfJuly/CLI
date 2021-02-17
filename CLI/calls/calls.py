@@ -1,5 +1,5 @@
 from typing import Optional, Tuple, Type, Union, TextIO, Callable, List
-
+from sys import stdin
 import re
 
 
@@ -112,6 +112,7 @@ class WC(GenCall):
 
         if input is not None:
             file_args.append(input)
+            self.args.append(" ")
 
         if len(file_args) == 0 and err == "":
             subshell_input: str = open_subshell()
@@ -124,7 +125,7 @@ class WC(GenCall):
             out += name + ": " + " ".join([str(r) for r in vals]) + "\n"
             res = tuple(acc + val for acc, val in zip(res, vals))
 
-        return out + "total:" + " ".join([str(r) for r in res]), err
+        return out + "total :" + " ".join([str(r) for r in res]), err
 
 
 class PWD(GenCall):
@@ -133,9 +134,50 @@ class PWD(GenCall):
         return self.substitute_str("${PWD}", mem), ""
 
 
+class EXIT(GenCall):
+
+    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+        stdin.close()
+        return None, ""
+
+
+class CAT(GenCall):
+    def cat(self, f: Union[TextIO, str]) -> str:
+        if isinstance(f, str):
+            return f
+        out = ""
+        for line in f:
+            out += line
+
+        return out
+
+    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+        err: str = ""
+        file_args: [Union[TextIO, str]] = []
+        for arg in self.args:
+            try:
+                file = open(arg, 'r')
+                file_args.append(file)
+            except Exception:
+                err += f"Got error on opening file {arg}\n"
+                continue
+
+        if len(file_args) == 0 and err == "":
+            subshell_input: str = open_subshell()
+            file_args = [subshell_input]
+            self.args.append("stdin")
+        out = ""
+        for name, arg in zip(self.args, file_args):
+            out += self.cat(arg)
+
+        return out, err
+
+
 def call_factory(name: str) -> Type:  # returns a type constructor
     return {
         "echo": Echo,
         "wc": WC,
-        "pwd": PWD
+        "pwd": PWD,
+        "exit": EXIT,
+        "cat": CAT,
     }.get(name, GenCall)
