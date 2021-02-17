@@ -1,18 +1,19 @@
 from typing import Optional, Tuple, Type, Union, TextIO, Callable, List
 from sys import stdin
 import re
+from io import StringIO
 
 
-def open_subshell() -> str:
-    res = []
-
-    while True:
-        try:
-            res.append(input('> '))
-        except EOFError:
-            out = '\n'.join(res)
-            break
-    return out
+def open_subshell() -> TextIO:
+    # res = []
+    # while True:
+    #     try:
+    #         res.append(input('> '))
+    #     except EOFError:
+    #         out = '\n'.join(res)
+    #         break
+    # return out
+    return stdin
 
 
 class GenCall:
@@ -101,7 +102,7 @@ class WC(GenCall):
     def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
         res: Tuple[int, int, int] = (0, 0, 0)
         err: str = ""
-        file_args: [Union[TextIO, str]] = []
+        file_args: [TextIO] = []
         for arg in self.args:
             try:
                 file = open(arg, 'r')
@@ -111,21 +112,21 @@ class WC(GenCall):
                 continue
 
         if input is not None:
+            input = StringIO(input)
             file_args.append(input)
             self.args.append(" ")
 
         if len(file_args) == 0 and err == "":
-            subshell_input: str = open_subshell()
-            file_args = [subshell_input]
+            file_args = [stdin]
             self.args.append("stdin")
 
         out = ""
         for name, arg in zip(self.args, file_args):
             vals: Tuple[int, int, int] = self.wc(arg)
-            out += name + ": " + " ".join([str(r) for r in vals]) + "\n"
+            out += name + " : " + " ".join([str(r) for r in vals]) + "\n"
             res = tuple(acc + val for acc, val in zip(res, vals))
 
-        return out + "total :" + " ".join([str(r) for r in res]), err
+        return out + "total : " + " ".join([str(r) for r in res]), err
 
 
 class PWD(GenCall):
@@ -142,9 +143,7 @@ class EXIT(GenCall):
 
 
 class CAT(GenCall):
-    def cat(self, f: Union[TextIO, str]) -> str:
-        if isinstance(f, str):
-            return f
+    def cat(self, f: Union[TextIO]) -> str:
         out = ""
         for line in f:
             out += line
@@ -153,7 +152,7 @@ class CAT(GenCall):
 
     def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
         err: str = ""
-        file_args: [Union[TextIO, str]] = []
+        file_args: [TextIO] = []
         for arg in self.args:
             try:
                 file = open(arg, 'r')
@@ -162,9 +161,13 @@ class CAT(GenCall):
                 err += f"Got error on opening file {arg}\n"
                 continue
 
+        if input is not None:
+            input = StringIO(input)
+            file_args.append(input)
+            self.args.append(" ")
+
         if len(file_args) == 0 and err == "":
-            subshell_input: str = open_subshell()
-            file_args = [subshell_input]
+            file_args = [stdin]
             self.args.append("stdin")
         out = ""
         for name, arg in zip(self.args, file_args):
