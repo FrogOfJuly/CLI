@@ -32,6 +32,10 @@ jobs:
           score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
           if [ -z "$score" ]; then score=10.0; fi
           (( $(bc <<< "$score >= $PYLINT_THRESHOLD") ))
+      -name: mypy
+        run: |
+          find cli -type f -iname "*.py" ! -iname "__init__.py" | xargs -r mypy
+
       - name: parse tests
         run: |
           cd ./tests

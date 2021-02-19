@@ -18,7 +18,7 @@ def open_subshell() -> TextIO:
 
 class GenCall:
     @staticmethod
-    def filenames2files(filenames: [str]) -> (str, [TextIO]):
+    def filenames2files(filenames: List[str]) -> (str, [TextIO]):
         err: str = ""
         file_args: [TextIO] = []
         for arg in filenames:
@@ -94,7 +94,7 @@ class Echo(GenCall):
 
 class Wc(GenCall):
     @staticmethod
-    def wc(f: Union[TextIO, str]) -> Tuple[int, int, int]:
+    def wc(f: Union[TextIO, str]) -> (int, int, int):
         if isinstance(f, str):
             lines = f.split('\n')
             lc = len(lines)
@@ -114,7 +114,7 @@ class Wc(GenCall):
         return ln + 1, wc, bc
 
     def execute(self, input: Optional[str], mem: dict) -> (str, str):
-        res: Tuple[int, int, int] = (0, 0, 0)
+        res: (int, int, int) = (0, 0, 0)
         err, file_args = self.filenames2files(self.args)
 
         if input is not None:
@@ -128,9 +128,9 @@ class Wc(GenCall):
 
         out = ""
         for name, arg in zip(self.args, file_args):
-            vals: Tuple[int, int, int] = self.wc(arg)
+            vals: (int, int, int) = self.wc(arg)
             out += name + " : " + " ".join([str(r) for r in vals]) + "\n"
-            res = tuple(acc + val for acc, val in zip(res, vals))
+            res = tuple(acc + val for acc, val in zip(res, vals)) # type: ignore
 
         return out + "total : " + " ".join([str(r) for r in res]), err
 

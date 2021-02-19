@@ -33,12 +33,12 @@ if __name__ == "__main__":
         tree = cli_parser.parse(line)
         stmt: Union[List[GenCall], Arithm] = tfm.transform(tree)
         if isinstance(stmt, Arithm):
-            arithm = stmt
+            arithm: Arithm = stmt  # type: ignore
             memory, err = arithm.update(memory)
             if err != "":
                 print(err)
         else:
-            calls = stmt
+            calls: List[GenCall] = stmt  # type: ignore
             output = None
             for call in calls:
                 call.substitute(mem=memory)

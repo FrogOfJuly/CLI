@@ -1,10 +1,10 @@
-from typing import Type, Tuple
+from typing import Type
 
 
 class Arithm:
     def __init__(self, *arithmic: str):
         # print(f"Arithm got {arithmic} as arguments")
-        self.arithm: Tuple[str, ...] = arithmic
+        self.arithm: (str, ...) = arithmic
 
     def __str__(self):
         return str(self.arithm)
