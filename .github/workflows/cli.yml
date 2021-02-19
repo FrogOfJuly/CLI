@@ -33,7 +33,7 @@ jobs:
       - name: mypy
         run: |
           pip install mypy
-          find CLI -type f -iname "*.py" ! -iname "__init__.py" | xargs -r mypy
+          find CLI -type f -iname "*.py" ! -iname "__init__.py" | xargs -r mypy --pretty
 
       - name: parse tests
         run: |
