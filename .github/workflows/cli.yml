@@ -37,6 +37,7 @@ jobs:
 
       - name: parse tests
         run: |
+          pip install pytest
           cd ./tests
           pytest -v parse_test.py
           cd ..
