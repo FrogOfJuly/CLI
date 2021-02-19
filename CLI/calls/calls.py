@@ -18,6 +18,20 @@ def open_subshell() -> TextIO:
 
 class GenCall:
     @staticmethod
+    def filenames2files(filenames: [str]) -> (str, [TextIO]):
+        err: str = ""
+        file_args: [TextIO] = []
+        for arg in filenames:
+            try:
+                file = open(arg, 'r')
+                file_args.append(file)
+            except Exception:
+                err += f"Got error on opening file {arg}\n"
+                continue
+
+        return err, file_args
+
+    @staticmethod
     def substitute_str(subst_string: str, mem: dict) -> str:
         complex_subst = re.compile("\$\{(.*?)\}")
         simple_subst = re.compile("\$([^\{])")
@@ -101,15 +115,7 @@ class Wc(GenCall):
 
     def execute(self, input: Optional[str], mem: dict) -> (str, str):
         res: Tuple[int, int, int] = (0, 0, 0)
-        err: str = ""
-        file_args: [TextIO] = []
-        for arg in self.args:
-            try:
-                file = open(arg, 'r')
-                file_args.append(file)
-            except Exception:
-                err += f"Got error on opening file {arg}\n"
-                continue
+        err, file_args = self.filenames2files(self.args)
 
         if input is not None:
             input = StringIO(input)
@@ -151,15 +157,7 @@ class Cat(GenCall):
         return out
 
     def execute(self, input: Optional[str], mem: dict) -> (str, str):
-        err: str = ""
-        file_args: [TextIO] = []
-        for arg in self.args:
-            try:
-                file = open(arg, 'r')
-                file_args.append(file)
-            except Exception:
-                err += f"Got error on opening file {arg}\n"
-                continue
+        err, file_args = self.filenames2files(self.args)
 
         if input is not None:
             input = StringIO(input)
