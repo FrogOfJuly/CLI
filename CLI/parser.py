@@ -157,5 +157,5 @@ class CliTransformer(Transformer):
         # print(f"constructing ARITHM: {items}")
         tree = arithmetics_parser.parse(items)
         # print(tree.pretty())
-        a = ArithmTransformer().transform(tree)
-        return a
+        arithmetics = ArithmTransformer().transform(tree)
+        return arithmetics

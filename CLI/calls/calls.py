@@ -130,7 +130,7 @@ class Wc(GenCall):
         for name, arg in zip(self.args, file_args):
             vals: (int, int, int) = self.wc(arg)
             out += name + " : " + " ".join([str(r) for r in vals]) + "\n"
-            res = tuple(acc + val for acc, val in zip(res, vals)) # type: ignore
+            res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
 
         return out + "total : " + " ".join([str(r) for r in res]), err
 
@@ -143,13 +143,16 @@ class Pwd(GenCall):
 
 class Exit(GenCall):
 
-    def execute(self, input: Optional[str], mem: dict) -> (str, str):
+    @staticmethod
+    def execute(input: Optional[str], mem: dict) -> (str, str):
         stdin.close()
         return None, ""
 
 
 class Cat(GenCall):
-    def cat(self, f: Union[TextIO]) -> str:
+
+    @staticmethod
+    def cat(f: Union[TextIO]) -> str:
         out = ""
         for line in f:
             out += line
