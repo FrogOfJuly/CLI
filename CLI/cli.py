@@ -41,7 +41,7 @@ if __name__ == "__main__":
             calls = stmt
             output = None
             for call in calls:
-                call.substitude(mem=memory)
+                call.substitute(mem=memory)
                 output, err = call.execute(input=output, mem=memory)
                 if err != "":
                     print(err)

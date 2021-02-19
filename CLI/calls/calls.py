@@ -27,7 +27,7 @@ class GenCall:
             subst = mem.get(var, "")
             return str(subst)
 
-        def perfrom_substitude(string: str, regexp, peel: Callable[[str], str]):
+        def perform_substitute(string: str, regexp, peel: Callable[[str], str]):
             new_string = re.sub(regexp,
                                 repl=lambda x: lookup(peel=peel,
                                                       match=x),
@@ -41,10 +41,10 @@ class GenCall:
 
             return new_string
 
-        subst_string = perfrom_substitude(subst_string,
+        subst_string = perform_substitute(subst_string,
                                           complex_subst,
                                           peel=lambda s: s[2:-1])
-        subst_string = perfrom_substitude(subst_string,
+        subst_string = perform_substitute(subst_string,
                                           simple_subst,
                                           peel=lambda s: s[1:])
 
@@ -54,7 +54,7 @@ class GenCall:
         self.args: List[str] = list(args)
         self.name: str = name
 
-    def substitude(self, mem: dict):
+    def substitute(self, mem: dict):
         args = self.args
         for idx, arg in enumerate(args):
             self.args[idx] = self.substitute_str(arg, mem)
