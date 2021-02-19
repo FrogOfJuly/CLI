@@ -1,14 +1,15 @@
-from sys import stdin
+import sys
+
+sys.path.insert(0, '.')
+
 from CLI.parser import cli_parser, CliTransformer
 from CLI.arithm.arithm import Arithm
 from CLI.calls.calls import GenCall
 from typing import Union, List
 
+
+
 import os
-
-
-class Test:
-    pass
 
 
 def init_memory() -> dict:
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     while True:
 
         try:
-            line = stdin.readline()
+            line = sys.stdin.readline()
         except ValueError:
             break
 

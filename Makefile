@@ -1,8 +1,7 @@
-.PHONY: test mypy flake8 pylint run clean help
+.PHONY: test run_flake8 run_pylint run_mypy run clean help
 
 help:
-	echo "make help\n make_run \n make run_flake8 \n make run_pylint \n make run_mypy make clean"
-
+	echo "make help \nmake_run \nmake run_flake8 \nmake run_pylint \nmake run_mypy\nmake clean"
 run:
 	pip3 install -r requirements.txt
 	python3 CLI/cli.py
