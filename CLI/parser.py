@@ -60,43 +60,51 @@ arithmetics_parser = Lark(
 
 
 class ArithmTransformer(Transformer):
-    def arithmetics(self, items):
+    @staticmethod
+    def arithmetics(items):
         item, = items
         return item
 
-    def id(self, items):
+    @staticmethod
+    def id(items):
         (item,) = items
         # print(f"got id: {item}")
         return str(item)
 
-    def opnd(self, items):
+    @staticmethod
+    def opnd(items):
         (item,) = items
         # print(f"got {item} as opnd")
         return item
 
-    def number(self, items):
+    @staticmethod
+    def number(items):
         item, = items
         # print(f"got {item} as argument for number")
         return int(item)
 
-    def binary(self, items):
+    @staticmethod
+    def binary(items):
         assert len(items) == 3, f"something got very wrong, got \'{items}\' while parsing binary operator"
         left, op, right = items
         # print(f"got {op} with aruments {left} and {right}")
         return op(left, right)
 
-    def bop(self, items):
+    @staticmethod
+    def bop(items):
         (item,) = items
         # print(f"constructing binary operation {item}")
         return arithm.arithm_factory(item)
 
 
 class CliTransformer(Transformer):
-    def start(self, items):
+    @staticmethod
+    def start(items):
         item, = items
         return item
 
-    def command(self, items):  # items here are parsed commands divided by pipes
+    @staticmethod
+    def command(items):  # items here are parsed commands divided by pipes
         assert len(items) % 2 == 1, f"something went wrong here!! {items}"
         pipe = []
         for idx, item in enumerate(items):
@@ -104,40 +112,48 @@ class CliTransformer(Transformer):
                 pipe.append(item)
         return pipe
 
-    def call(self, items):
+    @staticmethod
+    def call(items):
         name, *args = items
         # print(f"raw args: {args}")
         args = [arg.value for arg in args]
         # print(f"constructing call with name {name} and args: {args}")
         return calls.call_factory(name)(name, *args)
 
-    def pipe(self, _):
+    @staticmethod
+    def pipe(_):
         return None
 
-    def name(self, items):
+    @staticmethod
+    def name(items):
         (item,) = items
         return item
 
-    def arg(self, items):
+    @staticmethod
+    def arg(items):
         (item,) = items
         # print(f"constructing arg: {item}")
         return item
 
-    def string(self, items):
+    @staticmethod
+    def string(items):
         (item,) = items
         # print(f"constructing string {item}")
         return item
 
-    def word(self, items):
+    @staticmethod
+    def word(items):
         (item,) = items
         return item
 
-    def arithm(self, items):
+    @staticmethod
+    def arithm(items):
         item, = items
         # print(f"got {type(item)} as arithm")
         return item
 
-    def ARITHM(self, items):
+    @staticmethod
+    def ARITHM(items):
         # print(f"constructing ARITHM: {items}")
         tree = arithmetics_parser.parse(items)
         # print(tree.pretty())
