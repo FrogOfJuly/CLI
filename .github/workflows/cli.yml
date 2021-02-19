@@ -28,13 +28,13 @@ jobs:
         run: |
           pip install pylint
           PYLINT_THRESHOLD=9.0
-          find cli -type f -iname "*.py" ! -iname "__init__.py" | xargs -r pylint --disable=C0111 | tee pylint.txt || true
+          find CLI -type f -iname "*.py" ! -iname "__init__.py" | xargs -r pylint --disable=C0111 | tee pylint.txt || true
           score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
           if [ -z "$score" ]; then score=10.0; fi
           (( $(bc <<< "$score >= $PYLINT_THRESHOLD") ))
       - name: mypy
         run: |
-          find cli -type f -iname "*.py" ! -iname "__init__.py" | xargs -r mypy
+          find CLI -type f -iname "*.py" ! -iname "__init__.py" | xargs -r mypy
 
       - name: parse tests
         run: |
