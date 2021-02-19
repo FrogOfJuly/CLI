@@ -18,9 +18,9 @@ def open_subshell() -> TextIO:
 
 class GenCall:
     @staticmethod
-    def filenames2files(filenames: List[str]) -> (str, [TextIO]):
+    def filenames2files(filenames: List[str]) -> Tuple[str, List[TextIO]]:
         err: str = ""
-        file_args: [TextIO] = []
+        file_args: List[TextIO] = []
         for arg in filenames:
             try:
                 file = open(arg, 'r')
@@ -41,7 +41,7 @@ class GenCall:
             subst = mem.get(var, "")
             return str(subst)
 
-        def perform_substitute(string: str, regexp, peel: Callable[[str], str]):
+        def perform_substitute(string: str, regexp, peel: Callable[[str], str]) -> str:
             new_string = re.sub(regexp,
                                 repl=lambda x: lookup(peel=peel,
                                                       match=x),
@@ -73,8 +73,8 @@ class GenCall:
         for idx, arg in enumerate(args):
             self.args[idx] = self.substitute_str(arg, mem)
 
-    def execute(self, input: Optional[str], mem: dict) -> (str, str):
-        return "", "trying to execute non-existing command : \"" + str(self) + "\" on input: " + input
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+        return "", "trying to execute non-existing command : \"" + str(self) + "\" on input: " + str(input)
 
     def __str__(self) -> str:
         return "Call: " + str(self.name) + ' ' + str(self.args)
@@ -84,7 +84,7 @@ class GenCall:
 
 
 class Echo(GenCall):
-    def execute(self, input: Optional[str], mem: dict) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
         out = ""
         for arg in self.args:
             out += " " + str(arg)
@@ -94,7 +94,7 @@ class Echo(GenCall):
 
 class Wc(GenCall):
     @staticmethod
-    def wc(f: Union[TextIO, str]) -> (int, int, int):
+    def wc(f: Union[TextIO, str]) -> Tuple[int, int, int]:
         if isinstance(f, str):
             lines = f.split('\n')
             lc = len(lines)
@@ -113,13 +113,12 @@ class Wc(GenCall):
 
         return ln + 1, wc, bc
 
-    def execute(self, input: Optional[str], mem: dict) -> (str, str):
-        res: (int, int, int) = (0, 0, 0)
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+        res: Tuple[int, int, int] = (0, 0, 0)
         err, file_args = self.filenames2files(self.args)
 
         if input is not None:
-            input = StringIO(input)
-            file_args.append(input)
+            file_args.append(StringIO(input))
             self.args.append(" ")
 
         if len(file_args) == 0 and err == "":
@@ -128,7 +127,7 @@ class Wc(GenCall):
 
         out = ""
         for name, arg in zip(self.args, file_args):
-            vals: (int, int, int) = self.wc(arg)
+            vals: Tuple[int, int, int] = self.wc(arg)
             out += name + " : " + " ".join([str(r) for r in vals]) + "\n"
             res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
 
@@ -137,14 +136,14 @@ class Wc(GenCall):
 
 class Pwd(GenCall):
 
-    def execute(self, input: Optional[str], mem: dict) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
         return self.substitute_str("${PWD}", mem), ""
 
 
 class Exit(GenCall):
 
     @staticmethod
-    def execute(input: Optional[str], mem: dict) -> (str, str):
+    def execute(input: Optional[str], mem: dict) -> Tuple[str, str]:
         stdin.close()
         return None, ""
 
@@ -159,12 +158,11 @@ class Cat(GenCall):
 
         return out
 
-    def execute(self, input: Optional[str], mem: dict) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
         err, file_args = self.filenames2files(self.args)
 
         if input is not None:
-            input = StringIO(input)
-            file_args.append(input)
+            file_args.append(StringIO(input))
             self.args.append(" ")
 
         if len(file_args) == 0 and err == "":

@@ -1,10 +1,10 @@
-from typing import Type
+from typing import Type, Tuple
 
 
 class Arithm:
     def __init__(self, *arithmic: str):
         # print(f"Arithm got {arithmic} as arguments")
-        self.arithm: (str, ...) = arithmic
+        self.arithm: Tuple[str, ...] = arithmic
 
     def __str__(self):
         return str(self.arithm)
@@ -12,12 +12,12 @@ class Arithm:
     def __repr__(self):
         return self.__str__()
 
-    def update(self, mem: dict) -> (dict, str):
+    def update(self, mem: dict) -> Tuple[dict, str]:
         return mem, f"Requesting to perform unknown operation {self.arithm}"
 
 
 class Assignment(Arithm):
-    def update(self, mem: dict) -> (dict, str):
+    def update(self, mem: dict) -> Tuple[dict, str]:
         err = ""
         if len(self.arithm) != 2:
             err += f"Something went wrong with assign operator arguments {self.arithm}"
