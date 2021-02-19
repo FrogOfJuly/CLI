@@ -34,6 +34,7 @@ jobs:
           (( $(bc <<< "$score >= $PYLINT_THRESHOLD") ))
       - name: mypy
         run: |
+          pip install mypy
           find CLI -type f -iname "*.py" ! -iname "__init__.py" | xargs -r mypy
 
       - name: parse tests
