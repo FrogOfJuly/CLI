@@ -84,7 +84,7 @@ class GenCall:
 
 
 class Echo(GenCall):
-    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> (str, str):
         out = ""
         for arg in self.args:
             out += " " + str(arg)
