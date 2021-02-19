@@ -1,10 +1,9 @@
 import sys
 from typing import Callable
-import os
 
 sys.path.insert(0, '..')
 
-from CLI import CliTransformer, cli_parser
+from CLI import CliTransformer, cli_parser, Exit, Cat
 from CLI import Echo, Wc, Pwd
 
 
@@ -44,13 +43,19 @@ def test_simple_wc_cmd():
                lambda cmd: verify_cmd(cmd, [Wc("wc", *("parse_test.py",))]))
 
 
+def test_simple_exit_cmd():
+    parse_test("exit",
+               lambda cmd: verify_cmd(cmd, [Exit("exit")]))
+
+
 def test_simple_pwd_cmd():
     parse_test("pwd",
                lambda cmd: verify_cmd(cmd, [Pwd("pwd")]))
 
 
-if __name__ == '__main__':
-    test_simple_wc_cmd()
+def test_simple_cat_cmd():
+    parse_test("cat parse_test.py",
+               lambda cmd: verify_cmd(cmd, [Cat("cat", *("parse_test.py",))]))
 
 # parse_test("echo 1 2 3",
 #            lambda cmd: (isinstance(cmd, calls.Echo),
