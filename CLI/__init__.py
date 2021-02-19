@@ -1,4 +1,4 @@
-from .cli import *
-from .parser import *
-from .calls import *
-from .arithm import *
+from .cli import * # type: ignore
+from .parser import * # type: ignore
+from .calls import * # type: ignore
+from .arithm import *  # type: ignore
