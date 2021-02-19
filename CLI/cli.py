@@ -19,7 +19,14 @@ def init_memory() -> dict:
 if __name__ == "__main__":
     tfm = CliTransformer()
     memory = init_memory()
-    for line in stdin:
+    # for line in stdin:
+    while True:
+
+        try:
+            line = stdin.readline()
+        except ValueError:
+            break
+
         line = line[:-1]
         if line == "":
             continue

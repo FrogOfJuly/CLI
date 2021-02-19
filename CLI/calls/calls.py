@@ -59,7 +59,7 @@ class GenCall:
         for idx, arg in enumerate(args):
             self.args[idx] = self.substitute_str(arg, mem)
 
-    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> (str, str):
         return "", "trying to execute non-existing command : \"" + str(self) + "\" on input: " + input
 
     def __str__(self) -> str:
@@ -78,7 +78,7 @@ class Echo(GenCall):
         return out, ""
 
 
-class WC(GenCall):
+class Wc(GenCall):
     @staticmethod
     def wc(f: Union[TextIO, str]) -> Tuple[int, int, int]:
         if isinstance(f, str):
@@ -99,7 +99,7 @@ class WC(GenCall):
 
         return ln + 1, wc, bc
 
-    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> (str, str):
         res: Tuple[int, int, int] = (0, 0, 0)
         err: str = ""
         file_args: [TextIO] = []
@@ -129,20 +129,20 @@ class WC(GenCall):
         return out + "total : " + " ".join([str(r) for r in res]), err
 
 
-class PWD(GenCall):
+class Pwd(GenCall):
 
-    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> (str, str):
         return self.substitute_str("${PWD}", mem), ""
 
 
-class EXIT(GenCall):
+class Exit(GenCall):
 
-    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> (str, str):
         stdin.close()
         return None, ""
 
 
-class CAT(GenCall):
+class Cat(GenCall):
     def cat(self, f: Union[TextIO]) -> str:
         out = ""
         for line in f:
@@ -150,7 +150,7 @@ class CAT(GenCall):
 
         return out
 
-    def execute(self, input: Optional[str] = None, mem: dict = {}) -> (str, str):
+    def execute(self, input: Optional[str], mem: dict) -> (str, str):
         err: str = ""
         file_args: [TextIO] = []
         for arg in self.args:
@@ -179,8 +179,8 @@ class CAT(GenCall):
 def call_factory(name: str) -> Type:  # returns a type constructor
     return {
         "echo": Echo,
-        "wc": WC,
-        "pwd": PWD,
-        "exit": EXIT,
-        "cat": CAT,
+        "wc": Wc,
+        "pwd": Pwd,
+        "exit": Exit,
+        "cat": Cat,
     }.get(name, GenCall)
