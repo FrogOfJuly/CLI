@@ -34,6 +34,6 @@ jobs:
           (( $(bc <<< "$score >= $PYLINT_THRESHOLD") ))
       - name: parse tests
         run: |
-          cd tests
+          cd ./tests
           pytest -v parse_test.py
           cd ..
