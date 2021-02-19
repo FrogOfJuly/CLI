@@ -73,7 +73,7 @@ class GenCall:
         for idx, arg in enumerate(args):
             self.args[idx] = self.substitute_str(arg, mem)
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
         return "", "trying to execute non-existing command : \"" + str(self) + "\" on input: " + str(input)
 
     def __str__(self) -> str:
@@ -84,7 +84,7 @@ class GenCall:
 
 
 class Echo(GenCall):
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
         out = ""
         for arg in self.args:
             out += " " + str(arg)
@@ -113,7 +113,7 @@ class Wc(GenCall):
 
         return ln + 1, wc, bc
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
         res: Tuple[int, int, int] = (0, 0, 0)
         err, file_args = self.filenames2files(self.args)
 
@@ -136,14 +136,14 @@ class Wc(GenCall):
 
 class Pwd(GenCall):
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
         return self.substitute_str("${PWD}", mem), ""
 
 
 class Exit(GenCall):
 
     @staticmethod
-    def execute(input: Optional[str], mem: dict) -> Tuple[str, str]:
+    def execute(input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
         stdin.close()
         return None, ""
 
