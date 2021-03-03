@@ -9,7 +9,9 @@ import argparse
 import functools
 
 
-def is_stringio_empty(stringio: StringIO) -> bool:
+def is_stringio_empty(stringio: Optional[StringIO]) -> bool:
+    if not stringio:
+        return False
     pos = stringio.tell()
     stringio.seek(0, os.SEEK_END)
     empty = stringio.tell() == 0
@@ -295,7 +297,7 @@ class Grep(GenCall):
             return None, out.getvalue()
 
         if not file_args:
-            return self.grep(ptrn, input), ""
+            return self.grep(ptrn, input), ""  # type: ignore
 
         err = ""
 
