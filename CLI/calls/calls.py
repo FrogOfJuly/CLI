@@ -139,9 +139,9 @@ class Wc(GenCall):
             suc_filereads += 1
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
-            vals: Tuple[int, int, int] = self.wc(open_subshell())
-            out += "stdout : " + " ".join([str(r) for r in vals]) + "\n"
-            res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
+            vals_: Tuple[int, int, int] = self.wc(open_subshell())
+            out += "stdout : " + " ".join([str(r) for r in vals_]) + "\n"
+            res = tuple(acc + val for acc, val in zip(res, vals_))  # type: ignore
 
         return out + "total : " + " ".join([str(r) for r in res]), err
 
