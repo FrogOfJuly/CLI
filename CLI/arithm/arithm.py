@@ -10,7 +10,7 @@ class Arithm:
         return str(self.arithm)
 
     def __repr__(self):
-        return self.__str__()
+        return "Arithm obj: " + self.__str__()
 
     def update(self, mem: dict) -> Tuple[dict, str]:
         return mem, f"Requesting to perform unknown operation {self.arithm}"
