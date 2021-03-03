@@ -32,4 +32,4 @@ Arithm.cmd_dict = { # type: ignore
 
 
 def arithm_factory(name: str) -> Type:
-    return Arithm.cmd_dict.get(name, Arithm)
+    return Arithm.cmd_dict.get(name, Arithm)# type: ignore

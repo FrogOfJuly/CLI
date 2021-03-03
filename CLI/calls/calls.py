@@ -12,7 +12,7 @@ def open_subshell() -> TextIO:
 class GenCall:
 
     @staticmethod
-    def filenames2files(filenames: List[str]) -> Generator[Tuple[TextIO, str], None, None]:
+    def filenames2files(filenames: List[str]) -> Generator[Tuple[Optional[TextIO], str], None, None]:
         for arg in filenames:
             try:
                 file = open(arg, 'r')
@@ -209,4 +209,4 @@ GenCall.cmd_dict = {  # type: ignore
 
 
 def call_factory(name: str) -> Type:  # returns a type constructor
-    return GenCall.cmd_dict.get(name, GenCall)
+    return GenCall.cmd_dict.get(name, GenCall)# type: ignore
