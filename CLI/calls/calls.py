@@ -2,7 +2,7 @@ from typing import Optional, Tuple, Type, Union, TextIO, Callable, List
 from sys import stdin
 import re
 from io import StringIO
-import os
+from copy import copy
 
 
 def open_subshell() -> TextIO:
@@ -13,17 +13,13 @@ class GenCall:
 
     @staticmethod
     def filenames2files(filenames: List[str]) -> Tuple[str, List[TextIO]]:
-        err: str = ""
-        file_args: List[TextIO] = []
         for arg in filenames:
             try:
                 file = open(arg, 'r')
-                file_args.append(file)
+                yield file, ""
             except Exception:
-                err += f"Got error on opening file {arg}\n"
+                yield None, f"Got error on opening file '{arg}'\n"
                 continue
-
-        return err, file_args
 
     @staticmethod
     def substitute_str(subst_string: str, mem: dict) -> str:
@@ -88,16 +84,16 @@ class Echo(GenCall):
 
 class Wc(GenCall):
     @staticmethod
-    def wc(f: Union[TextIO, str]) -> Tuple[int, int, int]:
-        if isinstance(f, str):
-            lines = f.split('\n')
-            lc = len(lines)
-            words = []
-            for line in lines:
-                words += line.split(' ')
-            wc = len(words)
-            bc = len(f.encode("utf8"))
-            return lc, wc, bc
+    def wc(f: Union[TextIO]) -> Tuple[int, int, int]:
+        # if isinstance(f, str):
+        #     lines = f.split('\n')
+        #     lc = len(lines)
+        #     words = []
+        #     for line in lines:
+        #         words += line.split(' ')
+        #     wc = len(words)
+        #     bc = len(f.encode("utf8"))
+        #     return lc, wc, bc
         ln = -1
         wc = 0
         bc = 0
@@ -108,21 +104,42 @@ class Wc(GenCall):
         return ln + 1, wc, bc
 
     def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
+        # print("executing wc")
         res: Tuple[int, int, int] = (0, 0, 0)
-        err, file_args = self.filenames2files(self.args)
+        file_args = self.filenames2files(copy(self.args))
+        # print("created generator for files")
 
         if input is not None:
-            file_args.append(StringIO(input))
             self.args.append(" ")
 
-        if len(file_args) == 0 and err == "":
-            file_args = [stdin]
-            self.args.append("stdin")
+            def update_file_args_with_input(file_args_to_update):
+                yield from file_args_to_update
+                yield StringIO(input), ""
+
+            file_args = update_file_args_with_input(file_args)
+        # print("updated them with input")
 
         out = ""
-        for name, arg in zip(self.args, file_args):
-            vals: Tuple[int, int, int] = self.wc(arg)
+        err = ""
+        suc_filereads = 0
+        # print("entering to loop with", self.args)
+        for name, (file, file_err) in zip(self.args, file_args):
+            # print(f"I am in the loop with filename '{file}' and fileerror '{file_err}'")
+            if file_err:
+                err += file_err
+            if not file:
+                continue
+            vals: Tuple[int, int, int] = self.wc(file)
             out += name + " : " + " ".join([str(r) for r in vals]) + "\n"
+            res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
+            file.close()
+            suc_filereads += 1
+
+        # print("leaving loop with", suc_filereads)
+
+        if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
+            vals: Tuple[int, int, int] = self.wc(stdin)
+            out += "stdout : " + " ".join([str(r) for r in vals]) + "\n"
             res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
 
         return out + "total : " + " ".join([str(r) for r in res]), err
@@ -153,20 +170,46 @@ class Cat(GenCall):
         return out
 
     def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
-        err, file_args = self.filenames2files(self.args)
-
+        file_args = self.filenames2files(copy(self.args))
         if input is not None:
-            file_args.append(StringIO(input))
             self.args.append(" ")
 
-        if len(file_args) == 0 and err == "":
-            file_args = [stdin]
-            self.args.append("stdin")
+            def update_file_args_with_input(file_args_to_update):
+                yield from file_args_to_update
+                yield StringIO(input), ""
+
+            file_args = update_file_args_with_input(file_args)
+
         out = ""
-        for name, arg in zip(self.args, file_args):
-            out += self.cat(arg)
+        err = ""
+        suc_filereads = 0
+        for name, (file, file_err) in zip(self.args, file_args):
+            if file_err:
+                err += file_err
+            if not file:
+                continue
+            out += self.cat(file)
+            file.close()
+            suc_filereads += 1
+
+        if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
+            out += self.cat(stdin)
 
         return out, err
+        # print("entering to loop with", self.args)
+
+        # err, file_args = self.filenames2files(self.args)
+        #
+        # if input is not None:
+        #     file_args.append(StringIO(input))
+        #     self.args.append(" ")
+        #
+        # if len(file_args) == 0 and err == "":
+        #     file_args = [stdin]
+        #     self.args.append("stdin")
+        # out = ""
+        # for name, arg in zip(self.args, file_args):
+        #     out += self.cat(arg)
 
 
 GenCall.cmd_dict = {
