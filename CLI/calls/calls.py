@@ -106,7 +106,7 @@ class Wc(GenCall):
         if isinstance(f, StringIO):
             it: Optional[Iterable] = f.getvalue().split("\n")
         else:
-            it: Optional[Iterable] = f
+            it = f
         ln = -1
         wc = 0
         bc = 0
