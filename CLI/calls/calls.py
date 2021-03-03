@@ -208,12 +208,21 @@ class Cat(GenCall):
         return out, err
 
 
+class Grep(GenCall):
+    def grep(self):
+        pass
+
+    def execute(self, input: Optional[StringIO], mem: dict) -> Tuple[Optional[StringIO], str]:
+        return None, "Executing grep command with " + str(self)
+
+
 GenCall.cmd_dict = {  # type: ignore
     "echo": Echo,
     "wc": Wc,
     "pwd": Pwd,
     "exit": Exit,
     "cat": Cat,
+    "grep": Grep,
 }
 
 
