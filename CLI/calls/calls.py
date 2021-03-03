@@ -104,10 +104,8 @@ class Wc(GenCall):
         return ln + 1, wc, bc
 
     def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
-        # print("executing wc")
         res: Tuple[int, int, int] = (0, 0, 0)
         file_args = self.filenames2files(copy(self.args))
-        # print("created generator for files")
 
         if input is not None:
             self.args.append(" ")
@@ -117,14 +115,11 @@ class Wc(GenCall):
                 yield StringIO(input), ""
 
             file_args = update_file_args_with_input(file_args)
-        # print("updated them with input")
 
         out = ""
         err = ""
         suc_filereads = 0
-        # print("entering to loop with", self.args)
         for name, (file, file_err) in zip(self.args, file_args):
-            # print(f"I am in the loop with filename '{file}' and fileerror '{file_err}'")
             if file_err:
                 err += file_err
             if not file:
@@ -135,10 +130,8 @@ class Wc(GenCall):
             file.close()
             suc_filereads += 1
 
-        # print("leaving loop with", suc_filereads)
-
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
-            vals: Tuple[int, int, int] = self.wc(stdin)
+            vals: Tuple[int, int, int] = self.wc(open_subshell())
             out += "stdout : " + " ".join([str(r) for r in vals]) + "\n"
             res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
 
@@ -193,23 +186,9 @@ class Cat(GenCall):
             suc_filereads += 1
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
-            out += self.cat(stdin)
+            out += self.cat(open_subshell())
 
         return out, err
-        # print("entering to loop with", self.args)
-
-        # err, file_args = self.filenames2files(self.args)
-        #
-        # if input is not None:
-        #     file_args.append(StringIO(input))
-        #     self.args.append(" ")
-        #
-        # if len(file_args) == 0 and err == "":
-        #     file_args = [stdin]
-        #     self.args.append("stdin")
-        # out = ""
-        # for name, arg in zip(self.args, file_args):
-        #     out += self.cat(arg)
 
 
 GenCall.cmd_dict = {
