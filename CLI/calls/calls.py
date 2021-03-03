@@ -1,4 +1,5 @@
-from typing import Optional, Tuple, Type, Union, TextIO, Callable, List, Generator
+from typing import Optional, Tuple, Type, Union, TextIO, \
+    Callable, List, Generator, Iterable
 from sys import stdin
 import re
 from io import StringIO
@@ -80,7 +81,7 @@ class GenCall:
         for idx, arg in enumerate(args):
             self.args[idx] = self.substitute_str(arg, mem)
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[StringIO], str]:
+    def execute(self, input: Optional[StringIO], mem: dict) -> Tuple[Optional[StringIO], str]:
         return StringIO(), "trying to execute non-existing command : \"" + str(self) + "\" on input: " + str(input)
 
     def __str__(self) -> str:
@@ -102,12 +103,10 @@ class Echo(GenCall):
 class Wc(GenCall):
     @staticmethod
     def wc(f: Union[TextIO, StringIO]) -> Tuple[int, int, int]:
-        it = None
-        # print(type(f))
         if isinstance(f, StringIO):
-            it = f.getvalue().split("\n")
+            it: Optional[Iterable] = f.getvalue().split("\n")
         else:
-            it = f
+            it: Optional[Iterable] = f
         ln = -1
         wc = 0
         bc = 0
