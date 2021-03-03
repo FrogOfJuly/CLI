@@ -12,12 +12,12 @@ def open_subshell() -> TextIO:
 class GenCall:
 
     @staticmethod
-    def filenames2files(filenames: List[str]) -> Generator[Tuple[TextIO, str]]:
+    def filenames2files(filenames: List[str]) -> Generator[Tuple[TextIO, str], None, None]:
         for arg in filenames:
             try:
                 file = open(arg, 'r')
                 yield file, ""
-            except Exception:
+            except OSError:
                 yield None, f"Got error on opening file '{arg}'\n"
                 continue
 
