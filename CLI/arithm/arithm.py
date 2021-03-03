@@ -26,7 +26,10 @@ class Assignment(Arithm):
         return mem, err
 
 
+Arithm.cmd_dict = {
+    "=": Assignment
+}
+
+
 def arithm_factory(name: str) -> Type:
-    return {
-        "=": Assignment
-    }.get(name, Arithm)
+    return Arithm.cmd_dict.get(name, Arithm)

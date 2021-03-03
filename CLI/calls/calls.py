@@ -2,21 +2,15 @@ from typing import Optional, Tuple, Type, Union, TextIO, Callable, List
 from sys import stdin
 import re
 from io import StringIO
+import os
 
 
 def open_subshell() -> TextIO:
-    # res = []
-    # while True:
-    #     try:
-    #         res.append(input('> '))
-    #     except EOFError:
-    #         out = '\n'.join(res)
-    #         break
-    # return out
     return stdin
 
 
 class GenCall:
+
     @staticmethod
     def filenames2files(filenames: List[str]) -> Tuple[str, List[TextIO]]:
         err: str = ""
@@ -175,11 +169,14 @@ class Cat(GenCall):
         return out, err
 
 
+GenCall.cmd_dict = {
+    "echo": Echo,
+    "wc": Wc,
+    "pwd": Pwd,
+    "exit": Exit,
+    "cat": Cat,
+}
+
+
 def call_factory(name: str) -> Type:  # returns a type constructor
-    return {
-        "echo": Echo,
-        "wc": Wc,
-        "pwd": Pwd,
-        "exit": Exit,
-        "cat": Cat,
-    }.get(name, GenCall)
+    return GenCall.cmd_dict.get(name, GenCall)
