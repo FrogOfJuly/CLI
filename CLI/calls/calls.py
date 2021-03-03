@@ -124,7 +124,7 @@ class Wc(GenCall):
 
             file_args = update_file_args_with_input(file_args)
 
-        out = ""
+        out = []
         err = ""
         suc_filereads = 0
         for name, (file, file_err) in zip(self.args, file_args):
@@ -133,17 +133,17 @@ class Wc(GenCall):
             if not file:
                 continue
             vals: Tuple[int, int, int] = self.wc(file)
-            out += name + " : " + " ".join([str(r) for r in vals]) + "\n"
+            out.append(name + " : " + " ".join([str(r) for r in vals]) + "\n")
             res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
             file.close()
             suc_filereads += 1
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
             vals_: Tuple[int, int, int] = self.wc(open_subshell())
-            out += "stdout : " + " ".join([str(r) for r in vals_]) + "\n"
+            out.append("stdout : " + " ".join([str(r) for r in vals_]) + "\n")
             res = tuple(acc + val for acc, val in zip(res, vals_))  # type: ignore
 
-        return out + "total : " + " ".join([str(r) for r in res]), err
+        return "".join(out) + "total : " + " ".join([str(r) for r in res]), err
 
 
 class Pwd(GenCall):
@@ -164,11 +164,11 @@ class Cat(GenCall):
 
     @staticmethod
     def cat(f: Union[TextIO]) -> str:
-        out = ""
+        out = []
         for line in f:
-            out += line
+            out.append(line)
 
-        return out
+        return "".join(out)
 
     def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
         file_args = self.filenames2files(copy(self.args))
@@ -181,7 +181,7 @@ class Cat(GenCall):
 
             file_args = update_file_args_with_input(file_args)
 
-        out = ""
+        out = []
         err = ""
         suc_filereads = 0
         for name, (file, file_err) in zip(self.args, file_args):
@@ -189,14 +189,14 @@ class Cat(GenCall):
                 err += file_err
             if not file:
                 continue
-            out += self.cat(file)
+            out.append(self.cat(file))
             file.close()
             suc_filereads += 1
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
-            out += self.cat(open_subshell())
+            out.append(self.cat(open_subshell()))
 
-        return out, err
+        return "".join(out), err
 
 
 GenCall.cmd_dict = {  # type: ignore
@@ -209,4 +209,4 @@ GenCall.cmd_dict = {  # type: ignore
 
 
 def call_factory(name: str) -> Type:  # returns a type constructor
-    return GenCall.cmd_dict.get(name, GenCall)# type: ignore
+    return GenCall.cmd_dict.get(name, GenCall)  # type: ignore
