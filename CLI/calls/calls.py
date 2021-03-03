@@ -27,7 +27,8 @@ class GenCall:
         simple_subst = re.compile("\$([^\{])")
 
         def lookup(peel, match):
-            var = peel(match[0])
+            var_match = match[0]
+            var = peel(var_match)
             subst = mem.get(var, "")
             return str(subst)
 
@@ -47,12 +48,17 @@ class GenCall:
 
             return new_string
 
+        # ${anything} -> anything
+        complex_peel = lambda s: s[2:-1]
+        # $v -> v
+        simple_peel = lambda s: s[1:]
+
         subst_string = perform_substitute(subst_string,
                                           complex_subst,
-                                          peel=lambda s: s[2:-1])
+                                          peel=complex_peel)
         subst_string = perform_substitute(subst_string,
                                           simple_subst,
-                                          peel=lambda s: s[1:])
+                                          peel=simple_peel)
 
         return subst_string
 
