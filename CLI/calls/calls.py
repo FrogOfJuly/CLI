@@ -141,12 +141,10 @@ class Wc(GenCall):
             if not file:
                 continue
             vals: Tuple[int, int, int] = self.wc(file)
-            print(f"reading {name}, result: {vals}")
             out.write(name + " : " + " ".join([str(r) for r in vals]) + "\n")
             res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
             file.close()
             suc_filereads += 1
-        print(f"out: {out.getvalue()}")
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
             vals_: Tuple[int, int, int] = self.wc(open_subshell())
