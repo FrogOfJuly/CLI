@@ -28,8 +28,8 @@ if __name__ == "__main__":
         except ValueError:
             break
 
-        line = line[:-1]
-        if line == "":
+        line = line.rstrip()
+        if not line:
             continue
         tree = cli_parser.parse(line)
         stmt: Union[List[GenCall], Arithm] = tfm.transform(tree)

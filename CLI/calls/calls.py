@@ -31,7 +31,9 @@ class GenCall:
             subst = mem.get(var, "")
             return str(subst)
 
-        def perform_substitute(string: str, regexp, peel: Callable[[str], str]) -> str:
+        def perform_substitute(string: str,
+                               regexp,
+                               peel: Callable[[str], str]) -> str:
             new_string = re.sub(regexp,
                                 repl=lambda x: lookup(peel=peel,
                                                       match=x),
@@ -191,7 +193,7 @@ class Cat(GenCall):
         return out, err
 
 
-GenCall.cmd_dict = { # type: ignore
+GenCall.cmd_dict = {  # type: ignore
     "echo": Echo,
     "wc": Wc,
     "pwd": Pwd,
