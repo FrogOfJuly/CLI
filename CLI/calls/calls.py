@@ -2,7 +2,16 @@ from typing import Optional, Tuple, Type, Union, TextIO, Callable, List, Generat
 from sys import stdin
 import re
 from io import StringIO
+import os
 from copy import copy
+
+
+def is_stringio_empty(stringio: StringIO) -> bool:
+    pos = stringio.tell()
+    stringio.seek(0, os.SEEK_END)
+    empty = stringio.tell() == 0
+    stringio.seek(pos)
+    return empty
 
 
 def open_subshell() -> TextIO:
@@ -71,8 +80,8 @@ class GenCall:
         for idx, arg in enumerate(args):
             self.args[idx] = self.substitute_str(arg, mem)
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
-        return "", "trying to execute non-existing command : \"" + str(self) + "\" on input: " + str(input)
+    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[StringIO], str]:
+        return StringIO(), "trying to execute non-existing command : \"" + str(self) + "\" on input: " + str(input)
 
     def __str__(self) -> str:
         return "Call: " + str(self.name) + ' ' + str(self.args)
@@ -82,49 +91,49 @@ class GenCall:
 
 
 class Echo(GenCall):
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
-        out = ""
+    def execute(self, input: Optional[StringIO], mem: dict) -> Tuple[Optional[StringIO], str]:
+        out = StringIO()
         for arg in self.args:
-            out += " " + str(arg)
+            out.write(str(arg))
 
         return out, ""
 
 
 class Wc(GenCall):
     @staticmethod
-    def wc(f: Union[TextIO]) -> Tuple[int, int, int]:
-        # if isinstance(f, str):
-        #     lines = f.split('\n')
-        #     lc = len(lines)
-        #     words = []
-        #     for line in lines:
-        #         words += line.split(' ')
-        #     wc = len(words)
-        #     bc = len(f.encode("utf8"))
-        #     return lc, wc, bc
+    def wc(f: Union[TextIO, StringIO]) -> Tuple[int, int, int]:
+        it = None
+        # print(type(f))
+        if isinstance(f, StringIO):
+            it = f.getvalue().split("\n")
+        else:
+            it = f
         ln = -1
         wc = 0
         bc = 0
-        for ln, line in enumerate(f):
+        for ln, line in enumerate(it):  # type: ignore
             wc += len(line.split(" "))
             bc += len((line + '\n').encode("utf8"))
 
         return ln + 1, wc, bc
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
+    def execute(self,
+                input: Optional[StringIO],
+                mem: dict) -> Tuple[Optional[StringIO], str]:
+
         res: Tuple[int, int, int] = (0, 0, 0)
         file_args = self.filenames2files(copy(self.args))
 
-        if input is not None:
+        if input and not is_stringio_empty(input):
             self.args.append(" ")
 
             def update_file_args_with_input(file_args_to_update):
                 yield from file_args_to_update
-                yield StringIO(input), ""
+                yield input, ""
 
             file_args = update_file_args_with_input(file_args)
 
-        out = []
+        out = StringIO()
         err = ""
         suc_filereads = 0
         for name, (file, file_err) in zip(self.args, file_args):
@@ -133,29 +142,32 @@ class Wc(GenCall):
             if not file:
                 continue
             vals: Tuple[int, int, int] = self.wc(file)
-            out.append(name + " : " + " ".join([str(r) for r in vals]) + "\n")
+            print(f"reading {name}, result: {vals}")
+            out.write(name + " : " + " ".join([str(r) for r in vals]) + "\n")
             res = tuple(acc + val for acc, val in zip(res, vals))  # type: ignore
             file.close()
             suc_filereads += 1
+        print(f"out: {out.getvalue()}")
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
             vals_: Tuple[int, int, int] = self.wc(open_subshell())
-            out.append("stdout : " + " ".join([str(r) for r in vals_]) + "\n")
+            out.write("stdout : " + " ".join([str(r) for r in vals_]) + "\n")
             res = tuple(acc + val for acc, val in zip(res, vals_))  # type: ignore
 
-        return "".join(out) + "total : " + " ".join([str(r) for r in res]), err
+        out.write("total : " + " ".join([str(r) for r in res]))
+        return out, err
 
 
 class Pwd(GenCall):
 
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
-        return self.substitute_str("${PWD}", mem), ""
+    def execute(self, input: Optional[StringIO], mem: dict) -> Tuple[Optional[StringIO], str]:
+        return StringIO(self.substitute_str("${PWD}", mem)), ""
 
 
 class Exit(GenCall):
 
     @staticmethod
-    def execute(input: Optional[str], mem: dict) -> Tuple[Optional[str], str]:
+    def execute(input: Optional[StringIO], mem: dict) -> Tuple[Optional[StringIO], str]:
         stdin.close()
         return None, ""
 
@@ -163,25 +175,23 @@ class Exit(GenCall):
 class Cat(GenCall):
 
     @staticmethod
-    def cat(f: Union[TextIO]) -> str:
-        out = []
-        for line in f:
-            out.append(line)
+    def cat(f: TextIO) -> StringIO:
+        out = StringIO()
+        out.write(f.read())
+        return out
 
-        return "".join(out)
-
-    def execute(self, input: Optional[str], mem: dict) -> Tuple[str, str]:
+    def execute(self, input: Optional[StringIO], mem: dict) -> Tuple[StringIO, str]:
         file_args = self.filenames2files(copy(self.args))
-        if input is not None:
+        if input and not is_stringio_empty(input):
             self.args.append(" ")
 
             def update_file_args_with_input(file_args_to_update):
                 yield from file_args_to_update
-                yield StringIO(input), ""
+                yield input, ""
 
             file_args = update_file_args_with_input(file_args)
 
-        out = []
+        out = StringIO()
         err = ""
         suc_filereads = 0
         for name, (file, file_err) in zip(self.args, file_args):
@@ -189,14 +199,16 @@ class Cat(GenCall):
                 err += file_err
             if not file:
                 continue
-            out.append(self.cat(file))
+
+            # is there more efficient way to concat two iostrings?
+            out.write(self.cat(file).getvalue())
             file.close()
             suc_filereads += 1
 
         if suc_filereads == 0 and err == "":  # if no files were specified read from stdin
-            out.append(self.cat(open_subshell()))
+            out.write(self.cat(open_subshell()).getvalue())
 
-        return "".join(out), err
+        return out, err
 
 
 GenCall.cmd_dict = {  # type: ignore

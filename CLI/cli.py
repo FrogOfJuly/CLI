@@ -6,8 +6,7 @@ from CLI.parser import cli_parser, CliTransformer
 from CLI.arithm.arithm import Arithm
 from CLI.calls.calls import GenCall
 from typing import Union, List
-
-
+from CLI.calls.calls import is_stringio_empty
 
 import os
 
@@ -46,5 +45,5 @@ if __name__ == "__main__":
                 output, err = call.execute(input=output, mem=memory)
                 if err != "":
                     print(err)
-            if output != "" and output is not None:
-                print(output)
+            if output:
+                print(output.getvalue())
