@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Type, Union, TextIO, Callable, List
+from typing import Optional, Tuple, Type, Union, TextIO, Callable, List, Generator
 from sys import stdin
 import re
 from io import StringIO
@@ -12,7 +12,7 @@ def open_subshell() -> TextIO:
 class GenCall:
 
     @staticmethod
-    def filenames2files(filenames: List[str]) -> Tuple[str, List[TextIO]]:
+    def filenames2files(filenames: List[str]) -> Generator[Tuple[TextIO, str]]:
         for arg in filenames:
             try:
                 file = open(arg, 'r')
@@ -191,7 +191,7 @@ class Cat(GenCall):
         return out, err
 
 
-GenCall.cmd_dict = {
+GenCall.cmd_dict = { # type: ignore
     "echo": Echo,
     "wc": Wc,
     "pwd": Pwd,

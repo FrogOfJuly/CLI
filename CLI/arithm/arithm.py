@@ -26,7 +26,7 @@ class Assignment(Arithm):
         return mem, err
 
 
-Arithm.cmd_dict = {
+Arithm.cmd_dict = { # type: ignore
     "=": Assignment
 }
 
