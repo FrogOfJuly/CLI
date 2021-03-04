@@ -3,7 +3,7 @@ clone https://github.com/FrogOfJuly/CLI
 cd CLI
 ```
 Архитектура:
-![](media/scheme.png)
+![](media/scheme.png?raw=true)
 
 
 * Запустить CLI:
