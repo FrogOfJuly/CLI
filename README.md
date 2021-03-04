@@ -3,12 +3,7 @@ clone https://github.com/FrogOfJuly/CLI
 cd CLI
 ```
 Архитектура:
-```
-IO-loop   ->   lark parser
-   ^                |
-   |                v
- execute  <-   cmd/stmt oblect                 
-```
+![](media/scheme.png)
 
 
 * Запустить CLI:
