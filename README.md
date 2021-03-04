@@ -4,10 +4,7 @@ cd CLI
 ```
 Архитектура:
 ```
-IO-loop   ->   lark parser
-   ^                |
-   |                v
- execute  <-   cmd/stmt oblect                 
+see grep branch
 ```
 
 
