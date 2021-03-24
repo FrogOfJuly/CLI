@@ -6,6 +6,7 @@ cd CLI
 ![](media/scheme.png?raw=true)
 
 
+
 * Запустить CLI:
     ```shell
     make run
