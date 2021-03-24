@@ -3,9 +3,8 @@ clone https://github.com/FrogOfJuly/CLI
 cd CLI
 ```
 Архитектура:
-```
-see grep branch
-```
+![](media/scheme.png?raw=true)
+
 
 
 * Запустить CLI:

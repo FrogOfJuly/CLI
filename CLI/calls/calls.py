@@ -1,13 +1,17 @@
 from typing import Optional, Tuple, Type, Union, TextIO, \
-    Callable, List, Generator, Iterable
+    Callable, List, Generator, Iterable, Pattern
 from sys import stdin
 import re
 from io import StringIO
 import os
 from copy import copy
+import argparse
+import functools
 
 
-def is_stringio_empty(stringio: StringIO) -> bool:
+def is_stringio_empty(stringio: Optional[StringIO]) -> bool:
+    if not stringio:
+        return False
     pos = stringio.tell()
     stringio.seek(0, os.SEEK_END)
     empty = stringio.tell() == 0
@@ -208,12 +212,113 @@ class Cat(GenCall):
         return out, err
 
 
+def make_grep_parser():
+    arg_parser = argparse.ArgumentParser()
+    # -A num, --after-context=num
+    # Print num lines of trailing context after each match.
+
+    arg_parser.add_argument('pattern', metavar='pattern', type=str,
+                            help="pattern to search for")
+
+    arg_parser.add_argument('files', metavar='files', nargs="*", type=str,
+                            help="files where to search", default=None)
+
+    arg_parser.add_argument('-A', metavar='n', type=int,
+                            help="Print num lines of trailing context after each match.")
+
+    arg_parser.add_argument('-w', action='store_true',
+                            help="The expression is searched for as a word")
+
+    arg_parser.add_argument('-i', action='store_true',
+                            help="Perform case insensitive matching."
+                                 "By default, grep is case sensitive")
+    return arg_parser
+
+
+class Grep(GenCall):
+    arg_parser = make_grep_parser()
+
+    def __init__(self, name: str, *args: str):
+        super().__init__(name, *args)
+        self.failed_parse = False
+        try:
+            self.parsed_args = Grep.arg_parser.parse_args(self.args)
+        except:  # I need to catch right exception here, but I am too exhausted to look it up
+            self.failed_parse = True
+
+    def grep(self, pattern: Pattern, f: Union[TextIO, StringIO]) -> StringIO:
+        out = StringIO()
+        if isinstance(f, StringIO):
+            it: Iterable = f.getvalue().split("\n")
+        else:
+            it = f
+        A = self.parsed_args.A if self.parsed_args.A else 1
+        cnt = 0
+        local_match = lambda x: re.fullmatch(pattern, x)
+        if self.parsed_args.i:
+            print("setting ignore case")
+            local_match = lambda x: re.fullmatch(pattern, x, flags=re.I)
+
+        if self.parsed_args.w:
+            def local_match_prime(lcl_match, in_string):
+                ws = re.split("[ \t]", in_string)
+                for w in ws:
+                    # print(f"trying to match against {w}")
+                    if lcl_match(w):
+                        return True
+                return False
+
+            local_match = functools.partial(local_match_prime, copy(local_match))
+
+        for line in it:
+            line = line.rstrip()
+            if res := local_match(line):
+                cnt = copy(A)
+            # print(cnt, line)
+            if cnt > 0:
+                out.write(line + "\n")
+                cnt -= 1
+        return out
+
+    def execute(self, input: Optional[StringIO], mem: dict) -> Tuple[Optional[StringIO], str]:
+        out = StringIO()
+        if self.failed_parse or not self.args and not is_stringio_empty(input):
+            Grep.arg_parser.print_help(out)
+            return None, out.getvalue()
+
+        ptrn = self.parsed_args.pattern
+        filenames = self.parsed_args.files
+        file_args = self.filenames2files(filenames)
+
+        out = StringIO()
+
+        if not file_args and is_stringio_empty(input):
+            Grep.arg_parser.print_help(out)
+            return None, out.getvalue()
+
+        if not file_args:
+            return self.grep(ptrn, input), ""  # type: ignore
+
+        err = ""
+
+        for name, (file_arg, file_err) in zip(filenames, file_args):
+            if file_err:
+                err += file_err
+            if not file_arg:
+                continue
+
+            out.write(self.grep(ptrn, file_arg).getvalue())
+        # print("done with: ", out.getvalue())
+        return out, err  # "Executing grep command with " + str(self.parsed_args) + f"\nerr = {err}"
+
+
 GenCall.cmd_dict = {  # type: ignore
     "echo": Echo,
     "wc": Wc,
     "pwd": Pwd,
     "exit": Exit,
     "cat": Cat,
+    "grep": Grep,
 }
 
 

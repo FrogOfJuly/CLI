@@ -1,0 +1,46 @@
+digraph G {
+	graph [ dpi = 500 ]; 
+	compound=true;
+	node [shape = circle, fillcolor=white, style=filled];
+
+	subgraph cluster_0 {
+		expr4 [label="..."]
+		expr1 -> expr2 [label="out, err"];
+		expr2 -> expr4 [label="out, err"];
+		expr4 -> expr3 [label="out, err"];
+		color=blue;
+  	}
+
+  	subgraph cluster_1 {
+  		cmd [label="cmd"]
+		cmd -> grep
+		cmd -> wc
+		cmd -> echo
+		cmd -> pwd
+		cmd -> exit
+		cmd -> cat
+		color=blue;
+  	}
+
+  	subgraph cluster_2 {
+  		smt [label="smt"]
+  		assign [label="="]
+		smt -> assign
+		color=blue;
+  	}
+	
+	statment [label="execution"]
+	terminal [label=<<font color="green">terminal</font>>, fillcolor=black, color=green];
+
+	terminal -> lark [label=<<font color="blue">read line</font>>, color=blue];
+	lark -> cmd [label="parsed\ncommand pipe"];
+	grep -> expr1 [label="execution", ltail=cluster_1, lhead=cluster_0]
+	lark -> smt [label="parsed\nstatment", lhead=cluster_2];
+	assign -> statment [ltail=cluster_2]
+	statment -> terminal [label=<<font color="red">display errors</font>>]
+	expr2 -> terminal [label=<<font color="red">display output</font>>, ltail=cluster_0, color=red]
+	statment -> memory [label=<<font color="red">update state</font>>, color=red]
+	memory -> statment [label=<<font color="blue">substitute variables</font>>, color=blue]
+	expr2 -> memory [label=<<font color="red">update state</font>>, ltail=cluster_0, color=red]
+	memory -> expr3 [label=<<font color="blue">substitute variables</font>>, lhead=cluster_0, color=blue]
+}
