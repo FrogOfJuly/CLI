@@ -2,8 +2,10 @@
 clone https://github.com/FrogOfJuly/CLI
 cd CLI
 ```
-Архитектура:
+Диаграмма компонентов и использования:
 ![](media/scheme.png?raw=true)
+Диаграмма последовательностей
+![](media/cli_seq.png?raw=true)
 
 
 
